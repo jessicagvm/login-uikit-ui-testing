@@ -7,51 +7,54 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-test:
-    name: Build and Test (iOS)
+  build:
+    name: Build and Test (Xcode Project)
     runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # === Build ===
+      - name: Enter Project Directory
+        run: cd login-uikit-ui-testing
+        shell: bash
+
+      - name: Detect Project
+        id: detect
+        run: |
+          cd login-uikit-ui-testing
+          echo "Project path: $(pwd)"
+          project_path=$(ls | grep '\.xcodeproj$')
+          echo "Detected project: $project_path"
+          echo "project_path=$project_path" >> $GITHUB_ENV
+
       - name: Build for Testing
         run: |
-          set -o pipefail
-          xcodebuild build-for-testing \
-            -project login-swiftui-uitesting.xcodeproj \
-            -scheme "login-swiftui-uitesting" \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
-            -resultBundlePath Build.xcresult
+          cd login-uikit-ui-testing
+          device=$(xcrun xctrace list devices 2>&1 | grep -oE 'iPhone.*?[^\(]+' | head -1 | sed -e "s/ Simulator$//")
+          xcodebuild \
+            -project "${{ env.project_path }}" \
+            -scheme "login-uikit-ui-testing" \
+            -destination "platform=iOS Simulator,name=$device" \
+            -resultBundlePath ../Build.xcresult \
+            build-for-testing
+        shell: bash
 
-      # === Test ===
       - name: Test
         run: |
-          set -o pipefail
-          xcodebuild test-without-building \
-            -project login-swiftui-uitesting.xcodeproj \
-            -scheme "login-swiftui-uitesting" \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
-            -resultBundlePath TestResults.xcresult
+          cd login-uikit-ui-testing
+          device=$(xcrun xctrace list devices 2>&1 | grep -oE 'iPhone.*?[^\(]+' | head -1 | sed -e "s/ Simulator$//")
+          xcodebuild \
+            -project "${{ env.project_path }}" \
+            -scheme "login-uikit-ui-testing" \
+            -destination "platform=iOS Simulator,name=$device" \
+            -resultBundlePath ../TestResults.xcresult \
+            test-without-building
+        shell: bash
 
-      # === Upload Results ===
-      - name: Upload xcresult
+      - name: Upload TestResults.xcresult
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: TestResults-xcresult
+          name: TestResults
           path: TestResults.xcresult
-
-      - name: Export xcresult JSON
-        if: always()
-        run: |
-          mkdir -p parsed
-          xcrun xcresulttool get --path TestResults.xcresult --format json > parsed/result.json || true
-
-      - name: Upload parsed JSON
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: TestResults-json
-          path: parsed/result.json
