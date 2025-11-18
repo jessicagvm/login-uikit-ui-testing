@@ -1,4 +1,4 @@
-name: iOS starter workflow
+name: iOS CI
 
 on:
   push:
@@ -7,148 +7,51 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-    name: Build and Test default scheme using any available iPhone simulator
+  build-and-test:
+    name: Build and Test (iOS)
     runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show repo files (debug)
+      # === Build ===
+      - name: Build for Testing
         run: |
-          pwd
-          ls -la
-
-      - name: Print Xcode and available simulators (debug)
-        run: |
-          xcodebuild -version
-          xcrun simctl list devices
-          xcrun xctrace list devices 2>&1 | head -n 20 || true
-
-      - name: Detect project/workspace and print schemes
-        run: |
-          # detect workspace or project
-          if ls -1A *.xcworkspace 1> /dev/null 2>&1; then
-            echo "Using workspace"
-            filetype_parameter="workspace"
-            file_to_build=$(ls -1A *.xcworkspace | head -1)
-            list_arg="-workspace $file_to_build"
-          else
-            echo "Using project"
-            filetype_parameter="project"
-            file_to_build=$(ls -1A *.xcodeproj | head -1)
-            list_arg="-project $file_to_build"
-          fi
-
-          echo "File to build: $file_to_build"
-          echo "Schemes available:"
-          xcodebuild -list -$filetype_parameter $file_to_build || true
-          echo "Schemes (json):"
-          xcodebuild -list -json -$filetype_parameter $file_to_build || true
-
-          # choose a scheme (first shared scheme)
-          scheme=$(xcodebuild -list -json -$filetype_parameter $file_to_build \
-            | ruby -r json -e 'j=JSON.parse(STDIN.read); puts (j["project"] && j["project"]["schemes"] && j["project"]["schemes"][0]) || ""' )
-          if [ -z "$scheme" ]; then
-            echo "No scheme detected. Please ensure you have a shared scheme committed (.xcscheme in xcshareddata/xcschemes)."
-            exit 1
-          fi
-          echo "Selected scheme: $scheme"
-          echo "SCHEME=$scheme" >> $GITHUB_ENV
-          echo "FILETYPE_PARAMETER=$filetype_parameter" >> $GITHUB_ENV
-          echo "FILE_TO_BUILD=$file_to_build" >> $GITHUB_ENV
-
-      - name: Boot simulator (ensure device available)
-        run: |
-          # Choose a stable simulator destination
-          export DEST="platform=iOS Simulator,name=iPhone 16,OS=18.0"
-          echo "Destination: $DEST"
-          # Boot device if exists
-          device_udid=$(xcrun simctl list devices booted | grep "iPhone 16 (" || true)
-          if [ -z "$device_udid" ]; then
-            # find any iPhone 16 device (Shutdown or Shutdown state)
-            device_udid=$(xcrun simctl list devices | grep "iPhone 16 (" | head -n 1 | sed -E 's/.*\\(([0-9A-F-]+)\\).*/\\1/')
-          fi
-          if [ -n "$device_udid" ]; then
-            echo "Booting simulator UDID: $device_udid"
-            xcrun simctl boot "$device_udid" || true
-          else
-            echo "No iPhone 16 simulator found. Listing devices:"
-            xcrun simctl list devices
-            echo "Proceeding — xcodebuild may choose another simulator automatically."
-          fi
-          echo "DEST=$DEST" >> $GITHUB_ENV
-
-      - name: Build for testing
-        run: |
-          set -euo pipefail
-          echo "Building for testing..."
-          # Use variables exported to environment by previous step
-          if [ "${FILETYPE_PARAMETER}" = "workspace" ]; then
-            file_arg="-workspace ${FILE_TO_BUILD}"
-          else
-            file_arg="-project ${FILE_TO_BUILD}"
-          fi
-
+          set -o pipefail
           xcodebuild build-for-testing \
-            -scheme "${SCHEME}" \
-            ${file_arg} \
-            -destination "${DEST}" \
-            -derivedDataPath DerivedData \
-            CODE_SIGNING_REQUIRED=NO
+            -project login-swiftui-uitesting.xcodeproj \
+            -scheme "login-swiftui-uitesting" \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -resultBundlePath Build.xcresult
 
-      - name: Run tests and create xcresult
+      # === Test ===
+      - name: Test
         run: |
-          set -euo pipefail
-          echo "Running tests and producing TestResults.xcresult..."
-          if [ "${FILETYPE_PARAMETER}" = "workspace" ]; then
-            file_arg="-workspace ${FILE_TO_BUILD}"
-          else
-            file_arg="-project ${FILE_TO_BUILD}"
-          fi
+          set -o pipefail
+          xcodebuild test-without-building \
+            -project login-swiftui-uitesting.xcodeproj \
+            -scheme "login-swiftui-uitesting" \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -resultBundlePath TestResults.xcresult
 
-          # Use xcodebuild test with -resultBundlePath to produce the .xcresult bundle
-          xcodebuild test \
-            -scheme "${SCHEME}" \
-            ${file_arg} \
-            -destination "${DEST}" \
-            -resultBundlePath TestResults.xcresult \
-            -derivedDataPath DerivedData \
-            CODE_SIGNING_REQUIRED=NO
-
-      - name: Show TestResults contents (debug)
-        if: always()
-        run: |
-          echo "Listing test result bundle (if present)..."
-          if [ -d TestResults.xcresult ]; then
-            find TestResults.xcresult -maxdepth 2 -type f -print || true
-          else
-            echo "No TestResults.xcresult found."
-          fi
-
-      - name: Upload xcresult artifact
+      # === Upload Results ===
+      - name: Upload xcresult
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: TestResults-xcresult
           path: TestResults.xcresult
 
-      - name: Export xcresult to JSON (optional, for quick logs)
+      - name: Export xcresult JSON
         if: always()
         run: |
-          mkdir -p artifacts
-          if [ -d TestResults.xcresult ]; then
-            xcrun xcresulttool get --path TestResults.xcresult --format json > artifacts/result.json || true
-            echo "Wrote artifacts/result.json"
-          else
-            echo "No TestResults.xcresult to convert"
-            echo "{}" > artifacts/result.json
-          fi
+          mkdir -p parsed
+          xcrun xcresulttool get --path TestResults.xcresult --format json > parsed/result.json || true
 
       - name: Upload parsed JSON
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: TestResults-json
-          path: artifacts/result.json
+          path: parsed/result.json
