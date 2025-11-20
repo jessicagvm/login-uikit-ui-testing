@@ -33,7 +33,7 @@
 		9EB028D42EA80D1B00F48163 /* Exceptions for "login-uikit-ui-testing" folder in "login-uikit-ui-testing" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				Resources/Info.plist,
 			);
 			target = 9EB028A82EA80D1900F48163 /* login-uikit-ui-testing */;
 		};
@@ -88,6 +88,7 @@
 		9EB028A02EA80D1900F48163 = {
 			isa = PBXGroup;
 			children = (
+				9EFD568A2EB933C8004ED537 /* .github */,
 				9EB028AB2EA80D1900F48163 /* login-uikit-ui-testing */,
 				9EB028C52EA80D1B00F48163 /* login-uikit-ui-testingTests */,
 				9EB028CF2EA80D1B00F48163 /* login-uikit-ui-testingUITests */,
@@ -103,6 +104,21 @@
 				9EB028CC2EA80D1B00F48163 /* login-uikit-ui-testingUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9EFD568A2EB933C8004ED537 /* .github */ = {
+			isa = PBXGroup;
+			children = (
+				9EFD568B2EB933FC004ED537 /* workflows */,
+			);
+			path = .github;
+			sourceTree = "<group>";
+		};
+		9EFD568B2EB933FC004ED537 /* workflows */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = workflows;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
