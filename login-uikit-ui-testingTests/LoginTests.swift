@@ -9,7 +9,7 @@ import XCTest
 @testable import login_uikit_ui_testing // Ok
 // concepto de handle error and throwing function
 
-final class ViewModelTests: XCTestCase {
+final class LoginTests: XCTestCase {
     
     func testDidFinishEnterTextField_whenUsenameTextFieldType() { //TODO: - ** what does it must be testing here ?
    

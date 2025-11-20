@@ -7,7 +7,7 @@
 
 import XCTest
 
-final class login_uikit_ui_testingUITests: XCTestCase {
+final class LoginUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false

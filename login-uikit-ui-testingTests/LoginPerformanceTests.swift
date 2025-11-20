@@ -8,7 +8,7 @@
 import XCTest
 @testable import login_uikit_ui_testing
 
-final class Login_testingPerfomanceTests: XCTestCase {
+final class LoginPerformanceTests: XCTestCase {
 
 //    func testPerformanceLaunch() throws { // TODO: - should go in a different file - error
 ////        let app = XCUIApplication()
