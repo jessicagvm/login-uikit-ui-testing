@@ -1,0 +1,60 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build and Test (Xcode Project)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enter Project Directory
+        run: cd login-uikit-ui-testing
+        shell: bash
+
+      - name: Detect Project
+        id: detect
+        run: |
+          cd login-uikit-ui-testing
+          echo "Project path: $(pwd)"
+          project_path=$(ls | grep '\.xcodeproj$')
+          echo "Detected project: $project_path"
+          echo "project_path=$project_path" >> $GITHUB_ENV
+
+      - name: Build for Testing
+        run: |
+          cd login-uikit-ui-testing
+          device=$(xcrun xctrace list devices 2>&1 | grep -oE 'iPhone.*?[^\(]+' | head -1 | sed -e "s/ Simulator$//")
+          xcodebuild \
+            -project "${{ env.project_path }}" \
+            -scheme "login-uikit-ui-testing" \
+            -destination "platform=iOS Simulator,name=$device" \
+            -resultBundlePath ../Build.xcresult \
+            build-for-testing
+        shell: bash
+
+      - name: Test
+        run: |
+          cd login-uikit-ui-testing
+          device=$(xcrun xctrace list devices 2>&1 | grep -oE 'iPhone.*?[^\(]+' | head -1 | sed -e "s/ Simulator$//")
+          xcodebuild \
+            -project "${{ env.project_path }}" \
+            -scheme "login-uikit-ui-testing" \
+            -destination "platform=iOS Simulator,name=$device" \
+            -resultBundlePath ../TestResults.xcresult \
+            test-without-building
+        shell: bash
+
+      - name: Upload TestResults.xcresult
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          path: TestResults.xcresult
