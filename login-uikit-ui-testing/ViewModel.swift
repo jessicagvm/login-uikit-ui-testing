@@ -7,8 +7,8 @@
 
 import Foundation
 
+// FIXME: - clean and improve logic definition
 // the aim is to use combine in the future due to it's right tool to work with uikit
-
 enum InputError: Error {
     case empty
     case invalid
@@ -19,7 +19,6 @@ enum TextFieldType { // where do these structs should be ?
     case username
     case password
 }
-
 
 
 class ViewModel {

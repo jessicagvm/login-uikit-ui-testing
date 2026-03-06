@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  LoginViewController.swift
 //  login-uikit-ui-testing
 //
 //  Created by Jessica Vasquez on 21/10/2025.
@@ -7,8 +7,8 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITextFieldDelegate {
-    private lazy var titleLabel: UILabel = { // what are the best practice lazy var or let ??
+class LoginViewController: UIViewController, UITextFieldDelegate {
+    private lazy var titleLabel: UILabel = { // TODO: - what are the best practice lazy var or let ??
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 20)
         label.textColor = .white
@@ -32,6 +32,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         textField.layer.borderColor = UIColor.gray.cgColor
         textField.delegate = self
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.accessibilityIdentifier = AccessibilityIdentifiers.LoginView.usernameTextFieldId
         return textField
     }()
     
@@ -51,6 +52,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         textField.layer.contents = 8
         textField.delegate = self
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.accessibilityIdentifier = AccessibilityIdentifiers.LoginView.passwordextFielId
         return textField
     }()
     
@@ -60,10 +62,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = .blue
         button.layer.cornerRadius = 8
-        button.accessibilityIdentifier = "continue"
-        //button.setTitle("continue", for: .normal)
-        //5 button.isUserInteractionEnabled = true
+        button.isUserInteractionEnabled = true
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.accessibilityIdentifier = AccessibilityIdentifiers.LoginView.continueButtonId
         return button
     }()
     
@@ -90,14 +91,37 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
 }
 
-private extension ViewController {
+private extension LoginViewController {
     @objc func didTapContinueButton() {
-        // navigate to next viewController
         print("tapping")
+        
+        //        let items: Items = [Item(title: "item 1", image: UIImage()),
+        //                            Item(title: "item 2", image: UIImage()),
+        //                            Item(title: "item 3", image: UIImage()),
+        //                            Item(title: "item 4", image: UIImage())]
+        //        
+        //        let vc = MainViewController()
+        //        
+        //        let serviceMock = MainServiceMock()
+        //        serviceMock.result = .success(items)
+        //        
+        //        
+        //        let presenter = MainViewPresenter(view: vc, service: serviceMock)
+        //        
+        //        vc.presenter = presenter
+        
+        let vc = AppCoordinator().showMainView()
+        
+        guard let navigationController = navigationController else {
+            print("navigationController is nil")
+            return
+        }
+        
+        navigationController.pushViewController(vc, animated: true)
     }
 }
 
-private extension ViewController {
+private extension LoginViewController {
     func setUp() {
         self.view.backgroundColor = .black
         continueButton.addTarget(self, action: #selector(didTapContinueButton), for: .touchUpInside)
@@ -154,7 +178,6 @@ private extension ViewController {
     func setUpContinueButtonConstraints() {
         let view = view.safeAreaLayoutGuide
         NSLayoutConstraint.activate([
-         //   continueButton.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor, constant: 20),
             continueButton.bottomAnchor.constraint(greaterThanOrEqualTo: view.bottomAnchor, constant: -24),
             continueButton.heightAnchor.constraint(equalToConstant: 52),
             continueButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
@@ -163,9 +186,29 @@ private extension ViewController {
     }
 }
 
-extension ViewController {
+extension LoginViewController {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
+    }
+}
+
+// TODO: - move to another file
+struct AccessibilityIdentifiers {
+    struct LoginView {
+        static let usernameTextFieldId: String = "loginView.usernameTextField.id"
+        static let passwordextFielId: String = "loginView.passwordTextField.id"
+        static let continueButtonId: String
+        = "loginView.continueButton.id"
+    }
+    
+    struct MainView {
+        static let tableViewId: String = "mainView.tableView.id"
+        static let cellId: String = "mainView.cellView.id"
+    }
+    
+    struct DetailView {
+        static let titleLabelId: String =
+        "detailView.titleLabel.id"
     }
 }
