@@ -19,6 +19,9 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -switch /Applications/Xcode_16.4.app
 
+      - name: List Simulators
+        run: xcrun simctl list
+
       # 3. Show folder structure (debug)
       - name: Debug folder structure
         run: ls -R .
@@ -29,7 +32,7 @@ jobs:
           xcodebuild \
             -project "login-uikit-ui-testing.xcodeproj" \
             -scheme "login-uikit-ui-testing" \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -destination 'platform=iOS Simulator' \
             -resultBundlePath TestResults.xcresult \
             clean test | xcpretty --report junit
 
