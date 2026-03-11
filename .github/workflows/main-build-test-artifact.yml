@@ -26,13 +26,17 @@ jobs:
       - name: Debug folder structure
         run: ls -R .
 
+      - name: Boot Simulator
+        run: | 
+          xcrun simctl boot "iPhone 16"
+          
       # 4. Build and test using xcodebuild
       - name: Build and Test
         run: |
           xcodebuild \
             -project "login-uikit-ui-testing.xcodeproj" \
             -scheme "login-uikit-ui-testing" \
-            -destination 'platform=iOS Simulator' \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
             -resultBundlePath TestResults.xcresult \
             clean test | xcpretty --report junit
 
