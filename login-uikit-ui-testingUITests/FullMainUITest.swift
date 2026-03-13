@@ -37,7 +37,7 @@ final class FullMainUITest: XCTestCase {
     func testFromLoginToDetail() {
         // TODO: - aseert to know if exist
         userTextField.tap()
-        userTextField.typeText("Jake")
+        userTextField.typeText("Jake\n")
         
         passwordTextField.tap()
         passwordTextField.typeText("password\n")

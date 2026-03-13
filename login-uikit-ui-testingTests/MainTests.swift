@@ -40,14 +40,13 @@ final class MainTests: XCTestCase { // ** check later name
         // When
         sut.viewDidLoad()
         
-        XCTAssertTrue(viewMock.isLoading) // this call may attention
-        // XCTAssertFalse(viewMock.isLoading) // this call may attention
+        XCTAssertFalse(viewMock.isLoading)
         XCTAssertEqual(viewMock.viewModel.count, 2)
         XCTAssertEqual(viewMock.viewModel.first?.title, expectedItems.first?.title)
         
         XCTAssertNil(viewMock.selectedItem)
         XCTAssertTrue(viewMock.message.isEmpty)
-        XCTAssertTrue(viewMock.isEmptyState)
+        XCTAssertFalse(viewMock.isEmptyState)
     }
     
     //    func test_loadMovies_success_showsMovies() {
@@ -91,7 +90,6 @@ final class MainTests: XCTestCase { // ** check later name
     
     func testLoadItems_whenSetInitialStateWithEmptiedItems_ThenPerfomanceWithError() { // check later
         // Given
-        let expectedItems: Items? = nil
         let expectedError = NetworkError.invalidURL // donde checkeas las output si son void no value return, creo que tendrias que checkear tal vez el status y las variables modificadas despues de esta consulta, estas en el parametro no en la en la capa de networking
         let viewMock = MainViewMock()
         let serviceMock = MainServiceMock()
@@ -253,7 +251,6 @@ final class MainTests: XCTestCase { // ** check later name
         sut.didTapCell(with: indexPathInput)
         
         // Then
-        XCTAssertFalse(viewMock.isEmptyState)
         XCTAssertFalse(viewMock.isLoading)
         XCTAssertTrue(viewMock.isEmptyState)
         XCTAssertTrue(viewMock.viewModel.isEmpty)

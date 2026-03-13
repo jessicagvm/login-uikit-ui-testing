@@ -50,7 +50,7 @@ final class AuthenticationUITests: XCTestCase {
     
     func testLoginScreen_SuccessLogin_NavigateToMovies() {
         usernameTextField.tap()
-        usernameTextField.typeText("Peter")
+        usernameTextField.typeText("Peter\n")
         
         passwordTextField.tap()
         // MARK: - this was a conflict since the keyboard key has hidden the button view and they frames was changed -- the following line hides the keyboard

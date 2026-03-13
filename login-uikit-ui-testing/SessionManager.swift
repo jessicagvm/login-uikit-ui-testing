@@ -27,11 +27,6 @@ enum LaunchArguments: String {
 final class AppCoordinator {
     
     func showMainView() -> MainViewController {
-        let items: Items = [Item(title: "item 1", image: UIImage()),
-                            Item(title: "item 2", image: UIImage()),
-                            Item(title: "item 3", image: UIImage()),
-                            Item(title: "item 4", image: UIImage())]
-        
         let vc = MainViewController()
         
         let service: MoviesService = configureMoviesServiceIfNeeded()
